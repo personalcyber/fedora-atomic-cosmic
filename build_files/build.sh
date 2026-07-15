@@ -64,6 +64,12 @@ dnf -y copr enable atim/starship
 #   user via /etc/profile.d and the fish vendor conf dir
 # - ublue-os-just: ujust/ugum plus the recipe-import mechanism used by
 #   system_files/usr/share/ublue-os/just/60-custom.just
+# - gdm: replaces cosmic-greeter as the login manager (see the "Login
+#   manager" section below) - cosmic-greeter has a confirmed upstream bug
+#   where it never submits a manually-typed username to PAM/SSSD at all,
+#   silently launching a session for the wrong local account instead
+#   (https://github.com/pop-os/cosmic-greeter/issues/376), which breaks
+#   FreeIPA/AD login entirely
 dnf -y install --allowerasing \
     distrobox \
     ublue-os-just \
@@ -89,7 +95,8 @@ dnf -y install --allowerasing \
     starship \
     eza \
     bat \
-    fastfetch
+    fastfetch \
+    gdm
 
 ### Homebrew ##################################################################
 # Homebrew cannot live in the immutable /usr tree, so install it at build
@@ -121,6 +128,17 @@ rm -rf /.dockerenv /tmp/brew-install.sh /var/home/linuxbrew
 # the profile an actual desktop machine wants.
 firewall-offline-cmd --set-default-zone=FedoraWorkstation
 
+### Login manager: GDM instead of cosmic-greeter ###############################
+# The base image defaults to cosmic-greeter, but it has a confirmed upstream
+# bug breaking FreeIPA/AD login (see the package list comment above for the
+# issue link). GDM correctly hands manually-typed domain usernames to
+# PAM/SSSD, and still lets you pick the COSMIC session from its own session
+# switcher - `systemctl enable gdm.service` retargets the display-manager.service
+# alias, so cosmic-greeter no longer needs to be running to be inactive, but
+# disable it explicitly for clarity and to stop cosmic-greeter-daemon
+# starting alongside it.
+systemctl disable cosmic-greeter.service cosmic-greeter-daemon.service || true
+
 ### Helper scripts and services ###############################################
 chmod 0755 /usr/libexec/brew-setup.sh /usr/libexec/flathub-setup.sh
 systemctl enable \
@@ -132,7 +150,8 @@ systemctl enable \
     cups.service \
     cups-browsed.service \
     tailscaled.service \
-    rpm-ostreed-automatic.timer
+    rpm-ostreed-automatic.timer \
+    gdm.service
 
 ### Cleanup ###################################################################
 dnf clean all

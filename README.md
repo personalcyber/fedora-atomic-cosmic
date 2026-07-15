@@ -4,7 +4,9 @@ A custom [Fedora Atomic (bootc)](https://docs.fedoraproject.org/en-US/bootc/) im
 based on the official **Fedora COSMIC Atomic** desktop, with:
 
 - **COSMIC desktop** — from the `quay.io/fedora-ostree-desktops/cosmic-atomic`
-  base image
+  base image, with **GDM** as the login manager instead of the default
+  `cosmic-greeter` (see below) — the COSMIC session is still selectable from
+  GDM's own session switcher
 - **FreeIPA client** — `freeipa-client`, `krb5-workstation`, and
   `oddjob-mkhomedir` baked in, ready for domain enrollment
 - **Homebrew for all users** — installed at image build time and unpacked to
@@ -96,6 +98,23 @@ If accounts still don't show after enabling enumeration, check your IPA server's
 UID range (`ipa idrange-show`) — FreeIPA often auto-assigns UID ranges in the billions to
 avoid cross-domain collisions, which can fall outside whatever "human user" range a greeter
 filters to.
+
+### Why GDM instead of cosmic-greeter
+
+`cosmic-greeter` (COSMIC's own login manager) has a confirmed upstream bug affecting FreeIPA
+and Active Directory alike: manually typing a domain username that isn't in its enumerated
+list never actually gets submitted to PAM/SSSD for authentication at all — it silently opens
+a session for a different local account instead, with no error shown. Verified via
+`journalctl -u cosmic-greeter -u cosmic-greeter-daemon` during a live failed attempt: no
+`pam_sss` invocation appears anywhere in the log. See
+[pop-os/cosmic-greeter#376](https://github.com/pop-os/cosmic-greeter/issues/376) — this is
+an upstream defect, not something fixable via `sssd.conf`, HBAC, or IPA configuration (both
+were checked and ruled out before concluding this).
+
+This image installs and enables `gdm` instead, which correctly authenticates manually-typed
+domain usernames. GDM's own session switcher still lists the COSMIC session — enrolling in
+IPA doesn't require giving up the COSMIC desktop, just its default greeter. If upstream fixes
+`cosmic-greeter`, this can be reverted.
 
 ## Homebrew notes
 

@@ -102,6 +102,20 @@ state lives, not just whether it has a config file that looks build-time-safe:
   first-boot service into a
   build-time `RUN` command, check whether the tool's state lives under `/var` first.
 
+### GDM, not cosmic-greeter
+
+The base image's default login manager, `cosmic-greeter`, is deliberately disabled in
+`build.sh` in favor of `gdm`. This isn't a preference — `cosmic-greeter` has a confirmed
+upstream bug ([pop-os/cosmic-greeter#376](https://github.com/pop-os/cosmic-greeter/issues/376))
+where a manually-typed domain (FreeIPA/AD) username never reaches PAM/SSSD at all; it silently
+opens a session for a different local account with no error. Verified via a live
+`journalctl -u cosmic-greeter -u cosmic-greeter-daemon` capture during a failed login: no
+`pam_sss` line anywhere. SSSD config (enumeration, HBAC) was checked and ruled out first —
+this is a client-side defect, not something fixable from this repo's config. If upstream fixes
+it, reverting to `cosmic-greeter` means re-enabling `cosmic-greeter.service` +
+`cosmic-greeter-daemon.service` and disabling `gdm.service`; don't do that without confirming
+the fix actually landed.
+
 ### `ujust` recipes
 
 `system_files/usr/share/ublue-os/just/60-custom.just` is the one file that matters for
