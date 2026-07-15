@@ -18,10 +18,13 @@ mkdir -p /var/roothome
 # mirror per request - a bad one can make dnf's own retry-across-mirrors
 # exhaust its attempts). curl --retry re-queries the redirector fresh on each
 # attempt, so it can land on a different, working mirror instead.
-curl --retry 5 --retry-all-errors --retry-delay 3 --connect-timeout 15 -fsSL \
+# --max-time bounds each attempt's total wall-clock time (not just connect
+# time) - a mirror that accepts the connection but drips data arbitrarily
+# slowly would otherwise hang well past what --connect-timeout catches.
+curl --retry 5 --retry-all-errors --retry-delay 3 --connect-timeout 15 --max-time 40 -fsSL \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
     -o /tmp/rpmfusion-free-release.rpm
-curl --retry 5 --retry-all-errors --retry-delay 3 --connect-timeout 15 -fsSL \
+curl --retry 5 --retry-all-errors --retry-delay 3 --connect-timeout 15 --max-time 40 -fsSL \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" \
     -o /tmp/rpmfusion-nonfree-release.rpm
 dnf -y install /tmp/rpmfusion-free-release.rpm /tmp/rpmfusion-nonfree-release.rpm
