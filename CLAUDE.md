@@ -89,14 +89,17 @@ state lives, not just whether it has a config file that looks build-time-safe:
   container registry shortnames, `/etc/gitconfig`, SSH client config, `rpm-ostreed.conf` —
   all genuinely live under `/etc`, which is part of the commit and gets a 3-way merge on
   every deployment.
-- **Not safe at build time**: Flatpak's system installation (`/var/lib/flatpak`). An earlier
-  version of this repo ran `flatpak remote-add --system` directly in `build.sh`, reasoning
-  (incorrectly) that it'd persist the same way `/etc`-based config does. It doesn't — the
-  remote registration lives in `/var/lib/flatpak/repo/config`, gets discarded at commit time,
-  and the deployed system boots with no Flathub remote at all (confirmed via a real-world
-  migration where Flathub wasn't actually enabled after deploying). `flathub-setup.service` /
-  `flathub-setup.sh` run `flatpak remote-add` at first boot instead, same pattern as
-  `brew-setup.service`. If you're tempted to "simplify" a first-boot service into a
+- **Not safe at build time**: Flatpak's system installation (`/var/lib/flatpak`) — this
+  covers both the remote registration *and* any installed apps, since app data also lives
+  under `/var/lib/flatpak/app/`. An earlier version of this repo ran `flatpak remote-add
+  --system` directly in `build.sh`, reasoning (incorrectly) that it'd persist the same way
+  `/etc`-based config does. It doesn't — the remote registration lives in
+  `/var/lib/flatpak/repo/config`, gets discarded at commit time, and the deployed system
+  boots with no Flathub remote at all (confirmed via a real-world migration where Flathub
+  wasn't actually enabled after deploying). `flathub-setup.service` / `flathub-setup.sh` run
+  `flatpak remote-add` *and* `flatpak install` for this image's default app set at first
+  boot instead, same pattern as `brew-setup.service`. If you're tempted to "simplify" a
+  first-boot service into a
   build-time `RUN` command, check whether the tool's state lives under `/var` first.
 
 ### `ujust` recipes
