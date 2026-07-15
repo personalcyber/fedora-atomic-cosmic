@@ -28,6 +28,11 @@ just --justfile system_files/usr/share/ublue-os/just/60-custom.just --list
 just --justfile system_files/usr/share/ublue-os/just/60-custom.just --dry-run <recipe>
 ```
 
+Building a bootable installer ISO (not part of CI) uses a separate tool, `bootc-image-builder`,
+run against the built container image — see the "Building an ISO installer" section in
+`README.md` for the full command; it's not something `podman build` or this repo's own files
+produce directly.
+
 CI (`.github/workflows/build.yml`) builds on every push to `main`, on PRs (build-only, no
 push), weekly (Monday 05:20 UTC, to pick up upstream base-image/package updates), and on
 manual dispatch. It pushes `latest`, `44`, and a date tag to
