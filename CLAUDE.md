@@ -46,8 +46,8 @@ surface inside the actual `dnf` transaction in the container build.
 
 Three pieces compose the image, wired together by `Containerfile`:
 
-1. **`Containerfile`** — pulls the base image (version pinned via `FEDORA_VERSION` build
-   arg), `COPY`s `system_files/` onto `/`, then `COPY`s and runs `build_files/build.sh`.
+1. **`Containerfile`** — pulls the base image (tag controlled via `FEDORA_VERSION` build
+   arg, defaults to `latest`), `COPY`s `system_files/` onto `/`, then `COPY`s and runs `build_files/build.sh`.
 2. **`build_files/build.sh`** — the only place packages get installed and repos get enabled.
    Runs as a single `RUN` step with `set -euxo pipefail`; **order matters** — repo-enabling
    `dnf install`/`dnf copr enable` calls must happen in their own command *before* a later
@@ -143,7 +143,13 @@ distinct package on Fedora 44).
 
 ## Versioning
 
-`FEDORA_VERSION` is set in two places that must stay in sync: the `ARG` default in
-`Containerfile` and the `env.FEDORA_VERSION` in `.github/workflows/build.yml`. `build.sh` gets
-the Fedora release number dynamically via `rpm -E %fedora` for RPM Fusion's URL, so it doesn't
-need updating separately.
+The base image tag is `latest` by default (tracking whichever Fedora release the upstream
+`quay.io/fedora-ostree-desktops/cosmic-atomic:latest` points to). To pin to a specific Fedora
+release, set `FEDORA_VERSION` in both `Containerfile` (the `ARG` default) and
+`env.FEDORA_VERSION` in `.github/workflows/build.yml`, then restore the version-specific output
+tag in the workflow's `tags:` lines. `build.sh` reads the actual Fedora release number at
+build time via `rpm -E %fedora` for RPM Fusion's URL, so it never needs updating separately.
+
+Note: `quay.io/fedora-ostree-desktops/cosmic-atomic` does **not** publish a `:latest` tag —
+only versioned tags (`:44`, `:43`, etc.). To update to a new Fedora release, bump
+`FEDORA_VERSION` in both files above.
