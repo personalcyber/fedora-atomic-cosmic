@@ -76,16 +76,28 @@ first boot and `chown`s it to UID 1000 (the primary/first-created user) — Home
 single owning user. `/etc/profile.d/brew.sh` and the fish equivalent put `brew` on every
 user's `PATH` regardless of who owns the prefix.
 
-### Flatpak / firewalld: build-time, not first-boot
+### `/etc` vs `/var`: only one of them survives the build
 
-Unlike Homebrew, Flathub's remote and firewalld's default zone are configured *directly in
-`build.sh`* (`flatpak remote-add --system`, `firewall-offline-cmd --set-default-zone`), not
-via a first-boot service. This works because `/etc` is part of the ostree commit and gets a
-3-way merge on every deployment — a file/config written into `/etc` at build time is already
-correct on first boot with no runtime step needed. (An earlier version of this repo used a
-first-boot service for Flathub too; it was deliberately simplified away — prefer baking into
-`/etc` at build time over a first-boot systemd unit whenever the config target lives under
-`/etc`.)
+`ostree container commit` includes `/usr` and `/etc` in the image. `/var` is excluded
+entirely — treated like a Docker `VOLUME`, not committed at all — so anything written under
+`/var` during the `RUN` step in `Containerfile` is silently discarded and never reaches the
+deployed system. Before configuring a tool at build time, check where its *actual* persistent
+state lives, not just whether it has a config file that looks build-time-safe:
+
+- **Safe to configure directly in `build.sh`**: firewalld's default zone
+  (`firewall-offline-cmd --set-default-zone`, writes `/etc/firewalld/firewalld.conf`),
+  container registry shortnames, `/etc/gitconfig`, SSH client config, `rpm-ostreed.conf` —
+  all genuinely live under `/etc`, which is part of the commit and gets a 3-way merge on
+  every deployment.
+- **Not safe at build time**: Flatpak's system installation (`/var/lib/flatpak`). An earlier
+  version of this repo ran `flatpak remote-add --system` directly in `build.sh`, reasoning
+  (incorrectly) that it'd persist the same way `/etc`-based config does. It doesn't — the
+  remote registration lives in `/var/lib/flatpak/repo/config`, gets discarded at commit time,
+  and the deployed system boots with no Flathub remote at all (confirmed via a real-world
+  migration where Flathub wasn't actually enabled after deploying). `flathub-setup.service` /
+  `flathub-setup.sh` run `flatpak remote-add` at first boot instead, same pattern as
+  `brew-setup.service`. If you're tempted to "simplify" a first-boot service into a
+  build-time `RUN` command, check whether the tool's state lives under `/var` first.
 
 ### `ujust` recipes
 

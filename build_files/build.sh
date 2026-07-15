@@ -106,11 +106,13 @@ tar --zstd -cf /usr/share/homebrew.tar.zst -C /var/home linuxbrew
 rm -rf /.dockerenv /tmp/brew-install.sh /var/home/linuxbrew
 
 ### Flatpak ####################################################################
-# /etc is part of the ostree commit (and 3-way merged on every deployment), so
-# a remote added here is present for every user on first login with no
-# first-boot service needed.
-flatpak remote-add --system --if-not-exists flathub \
-    https://dl.flathub.org/repo/flathub.flatpakrepo
+# Deliberately NOT `flatpak remote-add` here: unlike /etc, /var is excluded
+# from the ostree commit entirely (treated like a Docker VOLUME - see
+# `ostree container commit`'s docs), so a remote registered during the build
+# lives in /var/lib/flatpak/repo/config and is silently discarded, never
+# reaching the deployed system. (Confirmed via a real-world migration where
+# Flathub wasn't actually enabled after deploying.) flathub-setup.service
+# below runs `flatpak remote-add` at first boot instead, when /var is real.
 
 ### Firewalld default zone #####################################################
 # firewall-offline-cmd edits the on-disk zone config directly (no running
@@ -120,9 +122,10 @@ flatpak remote-add --system --if-not-exists flathub \
 firewall-offline-cmd --set-default-zone=FedoraWorkstation
 
 ### Helper scripts and services ###############################################
-chmod 0755 /usr/libexec/brew-setup.sh
+chmod 0755 /usr/libexec/brew-setup.sh /usr/libexec/flathub-setup.sh
 systemctl enable \
     brew-setup.service \
+    flathub-setup.service \
     oddjobd.service \
     firewalld.service \
     avahi-daemon.service \

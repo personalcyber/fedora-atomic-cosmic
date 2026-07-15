@@ -9,6 +9,12 @@ ipa-enroll:
     else
         sudo ipa-client-install --mkhomedir --domain "${domain}"
     fi
+    # ipa-client-install rewrites sssd.conf/krb5.conf/PAM+NSS config, but
+    # services already running (sssd, oddjobd, certmonger) have the old
+    # config cached in memory - restart them so enrollment can actually
+    # authenticate without waiting for a reboot.
+    sudo systemctl restart sssd oddjobd certmonger
+    echo "Enrolled. If login still doesn't authenticate, reboot."
 
 # Remove this machine from its FreeIPA domain
 ipa-unenroll:
