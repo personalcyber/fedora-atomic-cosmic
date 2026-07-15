@@ -11,9 +11,10 @@ based on the official **Fedora COSMIC Atomic** desktop, with:
   `/var/home/linuxbrew` on first boot; `/etc/profile.d/brew.sh` (and a fish
   snippet) put `brew` on every user's PATH
 - **Distrobox** — available to all users for mutable container distros
-- **Flathub** — configured as a system-wide flatpak remote on first boot (must run at first
-  boot, not build time: `/var`, where flatpak's system installation lives, isn't part of the
-  ostree commit)
+- **Flathub + default apps** — the Flathub remote is configured and a curated app set is
+  installed on first boot (must run at first boot, not build time: `/var`, where flatpak's
+  system installation lives, isn't part of the ostree commit): Firefox, Thunderbird,
+  Flatseal, Warehouse, DejaDup, Mission Center, and GNOME Connections
 - **RPM Fusion (free + nonfree)** — full `ffmpeg` and hardware video
   acceleration (`mesa-*-freeworld`) instead of the patent-limited defaults
 - **Intel integrated graphics** — `intel-media-driver` (Broadwell/2014+) and

@@ -1,5 +1,5 @@
 [Unit]
-Description=Ensure the Flathub remote is configured system-wide
+Description=Configure the Flathub remote and install this image's default flatpak apps
 Wants=network-online.target
 After=network-online.target
 
@@ -7,6 +7,10 @@ After=network-online.target
 Type=oneshot
 ExecStart=/usr/libexec/flathub-setup.sh
 RemainAfterExit=yes
+# Installing several flatpak apps on first boot can take a few minutes on a
+# slow connection - don't let systemd's default 90s start timeout kill it
+# mid-install.
+TimeoutStartSec=900
 
 [Install]
 WantedBy=multi-user.target
