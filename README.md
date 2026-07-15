@@ -10,7 +10,7 @@ based on the official **Fedora COSMIC Atomic** desktop, with:
   `/var/home/linuxbrew` on first boot; `/etc/profile.d/brew.sh` (and a fish
   snippet) put `brew` on every user's PATH
 - **Distrobox** — available to all users for mutable container distros
-- **Flathub** — configured as a system-wide flatpak remote on first boot
+- **Flathub** — configured as a system-wide flatpak remote at image build time
 
 The image is built weekly (and on every push to `main`) by GitHub Actions and
 published to GHCR.

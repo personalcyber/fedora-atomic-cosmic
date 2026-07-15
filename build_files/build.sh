@@ -36,11 +36,17 @@ NONINTERACTIVE=1 /tmp/brew-install.sh
 tar --zstd -cf /usr/share/homebrew.tar.zst -C /var/home linuxbrew
 rm -rf /.dockerenv /tmp/brew-install.sh /var/home/linuxbrew
 
+### Flatpak ####################################################################
+# /etc is part of the ostree commit (and 3-way merged on every deployment), so
+# a remote added here is present for every user on first login with no
+# first-boot service needed.
+flatpak remote-add --system --if-not-exists flathub \
+    https://dl.flathub.org/repo/flathub.flatpakrepo
+
 ### Helper scripts and services ###############################################
-chmod 0755 /usr/libexec/brew-setup.sh /usr/libexec/flathub-setup.sh
+chmod 0755 /usr/libexec/brew-setup.sh
 systemctl enable \
     brew-setup.service \
-    flathub-setup.service \
     oddjobd.service
 
 ### Cleanup ###################################################################
