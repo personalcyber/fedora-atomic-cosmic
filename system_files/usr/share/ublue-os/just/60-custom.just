@@ -66,6 +66,34 @@ toggle-tailscale:
 verify-hwaccel:
     vainfo
 
+# Switch the login manager between GDM and cosmic-greeter
+# GDM is the default because cosmic-greeter has an upstream bug (pop-os/cosmic-greeter#376)
+# where manually-typed FreeIPA/AD usernames never reach PAM/SSSD. Switch back to
+# cosmic-greeter only after confirming the upstream fix has landed.
+toggle-login-manager:
+    #!/usr/bin/bash
+    set -euo pipefail
+    current=$(basename "$(readlink -f /etc/systemd/system/display-manager.service)" 2>/dev/null || echo "unknown")
+    if [ "${current}" = "gdm.service" ]; then
+        echo "Switching from GDM to cosmic-greeter."
+        echo "WARNING: cosmic-greeter has a known bug (pop-os/cosmic-greeter#376) where"
+        echo "manually-typed FreeIPA/AD usernames never reach PAM/SSSD. Only proceed if"
+        echo "you have confirmed the upstream fix is in your installed version."
+        confirm=$(ugum confirm "Switch to cosmic-greeter?")
+        if [ "${confirm}" != "true" ]; then
+            echo "Cancelled."
+            exit 0
+        fi
+        sudo systemctl disable gdm.service
+        sudo systemctl enable cosmic-greeter.service cosmic-greeter-daemon.service
+        echo "Switched to cosmic-greeter. Reboot to take effect."
+    else
+        echo "Switching from cosmic-greeter to GDM."
+        sudo systemctl disable cosmic-greeter.service cosmic-greeter-daemon.service || true
+        sudo systemctl enable gdm.service
+        echo "Switched to GDM. Reboot to take effect."
+    fi
+
 # Toggle the default Starship/eza/bat/fastfetch terminal setup on or off
 toggle-terminal-bling:
     #!/usr/bin/bash

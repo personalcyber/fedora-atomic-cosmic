@@ -139,6 +139,7 @@ Run `ujust --choose` for an interactive picker, or `ujust <recipe>` directly:
 | `distrobox-create NAME IMAGE` | Creates and enters a distrobox container |
 | `toggle-tailscale` | Enables/disables the Tailscale VPN mesh client |
 | `verify-hwaccel` | Runs `vainfo` to check Intel VA-API hardware video acceleration |
+| `toggle-login-manager` | Switches between GDM (default) and cosmic-greeter; warns before switching to cosmic-greeter due to the known FreeIPA/AD login bug ([#376](https://github.com/pop-os/cosmic-greeter/issues/376)) |
 | `toggle-terminal-bling` | Turns the default Starship/eza/bat/fastfetch terminal setup on or off |
 
 ## Building locally
