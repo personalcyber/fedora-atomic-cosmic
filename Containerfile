@@ -1,4 +1,4 @@
-ARG FEDORA_VERSION=latest
+ARG FEDORA_VERSION=44
 
 FROM quay.io/fedora-ostree-desktops/cosmic-atomic:${FEDORA_VERSION}
 

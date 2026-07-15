@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repo is
 
 A bootc/rpm-ostree "Containerfile" build for a custom Fedora Atomic image: Fedora COSMIC
-Atomic (`quay.io/fedora-ostree-desktops/cosmic-atomic:latest`) as the base, layered with a
+Atomic (`quay.io/fedora-ostree-desktops/cosmic-atomic:44`) as the base, layered with a
 FreeIPA-joinable, developer-oriented desktop configuration. There is no application source
 code here — this repo *is* the build definition for an OS image. All changes take effect by
 rebuilding the container image, not by running a program.
@@ -35,7 +35,7 @@ produce directly.
 
 CI (`.github/workflows/build.yml`) builds on every push to `main`, on PRs (build-only, no
 push), weekly (Monday 05:20 UTC, to pick up upstream base-image/package updates), and on
-manual dispatch. It pushes `latest` and a date tag to
+manual dispatch. It pushes `latest`, `44`, and a date tag to
 `ghcr.io/nativetexan70/fedora-atomic-cosmic` on non-PR events.
 
 There is no local dry-run of the full GitHub Actions build; the fastest real feedback loop is
@@ -149,3 +149,7 @@ release, set `FEDORA_VERSION` in both `Containerfile` (the `ARG` default) and
 `env.FEDORA_VERSION` in `.github/workflows/build.yml`, then restore the version-specific output
 tag in the workflow's `tags:` lines. `build.sh` reads the actual Fedora release number at
 build time via `rpm -E %fedora` for RPM Fusion's URL, so it never needs updating separately.
+
+Note: `quay.io/fedora-ostree-desktops/cosmic-atomic` does **not** publish a `:latest` tag —
+only versioned tags (`:44`, `:43`, etc.). To update to a new Fedora release, bump
+`FEDORA_VERSION` in both files above.
