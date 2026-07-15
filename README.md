@@ -29,6 +29,9 @@ based on the official **Fedora COSMIC Atomic** desktop, with:
 - **Developer defaults** — JetBrains Mono / Fira Code fonts, `init.defaultBranch
   = main` in `/etc/gitconfig`, and SSH keepalive tuning in
   `/etc/ssh/ssh_config.d/`
+- **Decorative terminal** — Starship prompt, `eza`/`bat` as `ls`/`cat`
+  replacements, and a `fastfetch` banner on shell open, wired up for every
+  user (bash, zsh, and fish) in interactive shells only
 
 The image is built weekly (and on every push to `main`) by GitHub Actions and
 published to GHCR.

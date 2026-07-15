@@ -34,6 +34,9 @@ curl -fsSL https://pkgs.tailscale.com/stable/fedora/tailscale.repo \
 # - tailscale: VPN mesh client (service enabled below; run `tailscale up`
 #   after first boot to authenticate against your tailnet)
 # - jetbrains-mono-fonts / fira-code-fonts: monospace coding fonts
+# - starship / eza / bat / fastfetch: decorative terminal setup (prompt,
+#   `ls`/`cat` replacements, startup system-info banner); wired up for every
+#   user via /etc/profile.d and the fish vendor conf dir
 dnf -y install --allowerasing \
     distrobox \
     freeipa-client \
@@ -55,7 +58,11 @@ dnf -y install --allowerasing \
     cups-browsed \
     tailscale \
     jetbrains-mono-fonts \
-    fira-code-fonts
+    fira-code-fonts \
+    starship \
+    eza \
+    bat \
+    fastfetch
 
 ### Homebrew ##################################################################
 # Homebrew cannot live in the immutable /usr tree, so install it at build
