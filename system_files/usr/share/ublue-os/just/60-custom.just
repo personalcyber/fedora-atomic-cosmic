@@ -9,6 +9,17 @@ ipa-enroll:
     else
         sudo ipa-client-install --mkhomedir --domain "${domain}"
     fi
+    # cosmic-greeter lists login-screen users via NSS/passwd enumeration
+    # (unlike GDM, which can show a manually-typed username without a
+    # directory listing), and SSSD has enumeration off by default for
+    # IPA/AD domains - so IPA accounts silently don't appear on the login
+    # screen even though login-by-username still works fine. Turn it on so
+    # enrolled accounts actually show up. Trade-off: SSSD will periodically
+    # sync the whole directory into its local cache, which is fine for a
+    # small IPA deployment but adds directory-server load on a large one.
+    if ! sudo grep -q '^enumerate' /etc/sssd/sssd.conf; then
+        sudo sed -i "/^\[domain\/${domain}\]/a enumerate = True" /etc/sssd/sssd.conf
+    fi
     # ipa-client-install rewrites sssd.conf/krb5.conf/PAM+NSS config, but
     # services already running (sssd, oddjobd, certmonger) have the old
     # config cached in memory - restart them so enrollment can actually

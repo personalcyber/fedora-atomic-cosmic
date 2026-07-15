@@ -74,6 +74,29 @@ already-running services have the old config cached in memory — restarting the
 avoids needing a reboot before authentication works, though a reboot may still be required
 in some cases.
 
+### IPA accounts not showing on the COSMIC login screen
+
+`cosmic-greeter` lists login-screen users via NSS/passwd enumeration — unlike GDM, which can
+show a manually-typed username without needing a directory listing. SSSD has enumeration off
+by default for IPA/AD domains (it's expensive against a large directory), so enrolled IPA
+accounts silently don't appear on the greeter even though logging in by typing the username
+still works. `ujust ipa-enroll` sets `enumerate = True` in the domain's `sssd.conf` section
+automatically; doing it by hand looks like:
+
+```bash
+sudo sed -i "/^\[domain\/YOUR.DOMAIN\]/a enumerate = True" /etc/sssd/sssd.conf
+sudo systemctl restart sssd
+```
+
+This is fine for a small IPA deployment, but full enumeration means SSSD periodically syncs
+the entire directory into its local cache — on a large corporate directory that adds real
+load, so treat it as a deliberate choice rather than a default for production environments.
+
+If accounts still don't show after enabling enumeration, check your IPA server's assigned
+UID range (`ipa idrange-show`) — FreeIPA often auto-assigns UID ranges in the billions to
+avoid cross-domain collisions, which can fall outside whatever "human user" range a greeter
+filters to.
+
 ## Homebrew notes
 
 Homebrew's prefix (`/var/home/linuxbrew/.linuxbrew`) is owned by the primary
@@ -90,7 +113,7 @@ Run `ujust --choose` for an interactive picker, or `ujust <recipe>` directly:
 | `update` | Updates the base image, Flatpaks, and Homebrew packages in one shot |
 | `rebase-helper` | Interactively rebase to a different tag of this image |
 | `clean-system` | Removes old rpm-ostree deployments, unused podman images, and unused flatpak runtimes |
-| `ipa-enroll` | Prompts for an IPA domain/server, runs `ipa-client-install --mkhomedir`, and restarts the affected services |
+| `ipa-enroll` | Prompts for an IPA domain/server, runs `ipa-client-install --mkhomedir`, enables SSSD enumeration (so accounts show on the COSMIC login screen), and restarts the affected services |
 | `ipa-unenroll` | Removes this machine from its FreeIPA domain |
 | `brew-status` | Shows whether Homebrew has been unpacked and who owns it |
 | `brew-resync` | Re-runs the Homebrew first-boot unpack (e.g. after a home directory wipe) |
