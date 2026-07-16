@@ -52,3 +52,14 @@ brew update && brew upgrade
 Homebrew lives in `/var`, which is separate from the ostree image. A `bootc upgrade` does not
 modify or reset Homebrew — your installed packages persist across image updates. The tarball
 in the image is only used on first boot (or after `ujust brew-resync`).
+
+## Homebrew vs Nix
+
+Nix (with Home Manager) is an alternative to Homebrew for user-level package management that
+offers declarative package specs, exact version pinning via `flake.lock`, and per-user
+rollback via Nix generations. The current release uses Homebrew; Nix is under consideration
+for a future variant.
+
+See [Package Manager Comparison](Package-Manager-Comparison.md) for a full side-by-side
+analysis, including what Nix can and cannot replace on a Fedora Atomic base, how the
+`/nix` store interacts with OSTree, and the rationale for the current choice.

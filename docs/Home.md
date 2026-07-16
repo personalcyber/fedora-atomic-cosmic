@@ -20,6 +20,7 @@ daily-driver desktop use.
 | `ujust` recipes | [ujust Recipes](ujust-Recipes.md) |
 | Building the image locally | [Building the Image](Building-the-Image.md) |
 | Building a bootable ISO installer | [ISO Installer](ISO-Installer.md) |
+| Homebrew vs Nix — package manager comparison | [Package Manager Comparison](Package-Manager-Comparison.md) |
 
 ## What's in the image
 
